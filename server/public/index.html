@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Beam</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Beam">
+<meta name="theme-color" content="#f6f5fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0c12" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <!-- Onboarding: add to Home Screen (iOS Safari only) -->
+  <section id="install" class="screen onboarding" hidden>
+    <div class="aurora"><i></i><i></i><i></i></div>
+    <div class="onb-body">
+      <div class="logo"><span></span></div>
+      <h1>Beam</h1>
+      <p class="lead">Send things between your iPhone and laptop in one tap.</p>
+      <div class="onb-card">
+        <p class="onb-title">First, add it to your Home Screen</p>
+        <ol class="onb-steps">
+          <li><span class="step-ico" data-icon="share"></span><span>Tap <b>Share</b> in Safari's toolbar</span></li>
+          <li><span class="step-ico" data-icon="plusSquare"></span><span>Choose <b>Add to Home Screen</b></span></li>
+          <li><span class="step-ico" data-icon="appIcon"></span><span>Open <b>Beam</b> from your Home Screen</span></li>
+        </ol>
+        <p class="fine">iPhone only allows notifications for apps opened from the Home Screen.</p>
+      </div>
+      <button class="link-btn" id="skipInstall">Continue in Safari instead</button>
+    </div>
+  </section>
+
+  <!-- Onboarding: pairing -->
+  <section id="pair" class="screen onboarding" hidden>
+    <div class="aurora"><i></i><i></i><i></i></div>
+    <div class="onb-body">
+      <div class="logo"><span></span></div>
+      <h1>Pair your laptop</h1>
+      <p class="lead">Type the code Beam shows on your laptop. To get a new one: Beam → <b>Settings</b> → <b>Pair a phone</b>.</p>
+      <input id="code" class="code-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••">
+      <button class="btn primary wide" id="pairBtn">Pair</button>
+    </div>
+  </section>
+
+  <!-- Main app -->
+  <section id="main" class="screen" hidden>
+    <div class="tabs">
+      <!-- INBOX -->
+      <section class="tab" id="tab-inbox" hidden>
+        <header class="large-title">
+          <h1>Inbox</h1>
+          <div class="seg" id="filter">
+            <button data-filter="all" class="on">All</button>
+            <button data-filter="in">Received</button>
+            <button data-filter="out">Sent</button>
+          </div>
+        </header>
+        <div id="feed" class="feed"></div>
+      </section>
+
+      <!-- SEND -->
+      <section class="tab" id="tab-send">
+        <header class="large-title">
+          <h1>Send</h1>
+          <span class="pill" id="laptopPill"><i></i><span>Checking…</span></span>
+        </header>
+
+        <div class="targets" id="targets" hidden></div>
+
+        <label class="hero">
+          <div class="aurora"><i></i><i></i><i></i></div>
+          <div class="hero-inner">
+            <div class="hero-ico" data-icon="arrowUp"></div>
+            <div class="hero-title" id="heroTitle">Send to laptop</div>
+            <div class="hero-sub">Photos, videos, files</div>
+          </div>
+          <input type="file" id="fileInput" multiple>
+        </label>
+
+        <div class="quick">
+          <button class="tile" id="pasteBtn"><span data-icon="clipboard"></span>Paste</button>
+          <button class="tile" id="textBtn"><span data-icon="text"></span>Text</button>
+          <label class="tile"><span data-icon="camera"></span>Camera<input type="file" id="cameraInput" accept="image/*" capture="environment"></label>
+        </div>
+
+        <div class="composer" id="composer" hidden>
+          <textarea id="text" rows="3" placeholder="Type or paste text…"></textarea>
+          <div class="composer-row">
+            <button class="btn ghost" id="cancelText">Cancel</button>
+            <button class="btn primary" id="sendTextBtn" disabled>Send text</button>
+          </div>
+        </div>
+
+        <div id="uploads" class="uploads"></div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="tab" id="tab-settings" hidden>
+        <header class="large-title"><h1>Settings</h1></header>
+
+        <h2 class="group-title">Notifications</h2>
+        <div class="group">
+          <div class="row">
+            <span class="row-ico" data-icon="bell" style="--c:#ff5b7f"></span>
+            <div class="row-main"><div>Notifications</div><div class="row-sub" id="notifSub">…</div></div>
+            <button class="btn small primary" id="notifBtn" hidden>Turn on</button>
+          </div>
+          <button class="row" id="testBtn">
+            <span class="row-ico" data-icon="spark" style="--c:#a65bff"></span>
+            <div class="row-main">Send a test notification</div>
+            <span class="chev" data-icon="chevron"></span>
+          </button>
+        </div>
+
+        <h2 class="group-title">Share from any app</h2>
+        <div class="group">
+          <button class="row" id="guideBtn">
+            <span class="row-ico" data-icon="share" style="--c:#5b6cff"></span>
+            <div class="row-main"><div>Add Beam to the Share button</div><div class="row-sub">2-minute setup with Shortcuts</div></div>
+            <span class="chev" data-icon="chevron"></span>
+          </button>
+        </div>
+
+        <h2 class="group-title">Account</h2>
+        <div class="group">
+          <div class="row">
+            <span class="row-ico" data-icon="user" style="--c:#ff9f1c"></span>
+            <div class="row-main"><div id="meName">…</div><div class="row-sub" id="friendsSub">…</div></div>
+          </div>
+        </div>
+
+        <h2 class="group-title">Laptop</h2>
+        <div class="group">
+          <div class="row">
+            <span class="row-ico" data-icon="laptop" style="--c:#2bb673"></span>
+            <div class="row-main"><div>Your laptop</div><div class="row-sub" id="laptopSub">…</div></div>
+          </div>
+          <button class="row" id="unpairBtn">
+            <span class="row-ico" data-icon="unlink" style="--c:#8e8c99"></span>
+            <div class="row-main danger">Unpair this phone</div>
+          </button>
+        </div>
+        <p class="footnote">Everything is deleted from the server 24 hours after it's sent.</p>
+      </section>
+    </div>
+
+    <nav class="tabbar">
+      <button data-tab="inbox"><span class="tb-ico" data-icon="inbox"></span><span>Inbox</span><b class="badge" id="badge" hidden></b></button>
+      <button data-tab="send" class="on"><span class="tb-ico" data-icon="send"></span><span>Send</span></button>
+      <button data-tab="settings"><span class="tb-ico" data-icon="gear"></span><span>Settings</span></button>
+    </nav>
+  </section>
+
+  <!-- Image viewer -->
+  <div class="viewer" id="viewer" hidden>
+    <button class="viewer-close" id="viewerClose" data-icon="x" aria-label="Close"></button>
+    <img id="viewerImg" alt="">
+    <div class="viewer-bar">
+      <button class="btn primary" id="viewerSave"><span data-icon="download"></span>Save / Share</button>
+    </div>
+  </div>
+
+  <!-- Share-button guide -->
+  <div class="sheet" id="guide" hidden>
+    <div class="sheet-head">
+      <h2>Add to the Share button</h2>
+      <button class="btn small ghost" id="guideClose">Done</button>
+    </div>
+    <div class="sheet-body">
+      <p class="lead small">Apple doesn't let web apps appear in the Share button, so we'll make a tiny Shortcut that does the sending. You only do this once.</p>
+
+      <div class="step"><div class="num">1</div><div class="step-main">
+        <div class="step-title">Copy your private link</div>
+        <p>It already contains your key, so keep it to yourself.</p>
+        <button class="btn primary" id="copyLinkBtn"><span data-icon="copy"></span>Copy link</button>
+      </div></div>
+
+      <div class="step"><div class="num">2</div><div class="step-main">
+        <div class="step-title">Create a new Shortcut</div>
+        <p>Tap the name at the top, choose <b>Rename</b>, and call it <b>Send to Laptop</b>.</p>
+        <a class="btn" href="shortcuts://create-shortcut"><span data-icon="spark"></span>Open Shortcuts</a>
+      </div></div>
+
+      <div class="step"><div class="num">3</div><div class="step-main">
+        <div class="step-title">Show it in the Share button</div>
+        <p>Tap the name at the top again → <b>Details</b> → turn on <b>Show in Share Sheet</b> → <b>Done</b>.</p>
+        <div class="mock"><div class="mock-row"><span>Show in Share Sheet</span><span class="mock-switch on"></span></div></div>
+      </div></div>
+
+      <div class="step"><div class="num">4</div><div class="step-main">
+        <div class="step-title">Add “Get Contents of URL”</div>
+        <p>Tap <b>Search Actions</b> at the bottom, search <b>Get Contents of URL</b> and tap it. Tap the blue <b>URL</b> and paste your link.</p>
+        <div class="mock"><div class="mock-action"><span class="mock-glyph" data-icon="globe"></span>Get contents of <span class="mock-var">beam…workers.dev</span></div></div>
+      </div></div>
+
+      <div class="step"><div class="num">5</div><div class="step-main">
+        <div class="step-title">Set it to send the file</div>
+        <p>Tap the <b>›</b> arrow on that action, then set:</p>
+        <div class="mock">
+          <div class="mock-row"><span>Method</span><span class="mock-val">POST</span></div>
+          <div class="mock-row"><span>Request Body</span><span class="mock-val">Form</span></div>
+          <div class="mock-row"><span class="mock-chip">File</span><span>file</span><span class="mock-var">Shortcut Input</span></div>
+        </div>
+        <p class="fine">Tap <b>Add new field</b> → <b>File</b>. Type <b>file</b> as the key. Tap the value and pick <b>Shortcut Input</b>.</p>
+      </div></div>
+
+      <div class="step"><div class="num">6</div><div class="step-main">
+        <div class="step-title">Try it</div>
+        <p>Open Photos, pick a photo, tap <b>Share</b> → <b>Send to Laptop</b>. The first time, iPhone asks to allow the connection: tap <b>Always Allow</b>.</p>
+      </div></div>
+
+      <div class="tip">
+        <b>Want to send Safari links too?</b> Make a second Shortcut called <b>Send Link to Laptop</b> the same way, but in step 5 add a <b>Text</b> field (key <b>text</b>) instead of a File field.
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

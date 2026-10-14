@@ -1,0 +1,44 @@
+# Push a tag like v3.0.0 and this builds Beam-Setup.exe and attaches it to a GitHub release.
+# The join page links to releases/latest/download/Beam-Setup.exe, so friends always get the newest one.
+name: Release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node test/push.test.mjs
+        working-directory: server
+
+  windows:
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install --no-audit --no-fund
+        working-directory: desktop
+      - run: npx electron-builder --win nsis --publish never
+        working-directory: desktop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Beam-Setup
+          path: desktop/dist/Beam-Setup.exe
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --title "Beam $GITHUB_REF_NAME" --notes-file .github/release-notes.md
+          gh release upload "$GITHUB_REF_NAME" desktop/dist/Beam-Setup.exe --clobber

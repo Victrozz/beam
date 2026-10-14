@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<title>Set up Beam</title>
+<link rel="stylesheet" href="setup.css">
+</head>
+<body>
+  <div class="card" id="card">
+    <header class="bar">
+      <div class="brand"><span class="logo"></span><span>beam</span></div>
+      <div class="dots" id="dots"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+      <button class="icon-btn" id="closeBtn" title="Close" data-icon="x"></button>
+    </header>
+
+    <!-- 1. Welcome -->
+    <section class="step" data-step="welcome">
+      <div class="hero">
+        <div class="aurora"><i></i><i></i><i></i></div>
+        <div class="orb"><span data-icon="arrowUp"></span></div>
+      </div>
+      <h1>Welcome to Beam</h1>
+      <p class="lead">Send photos, files, text and links between your laptop, your phone and your friends. Drop it in, and it's there.</p>
+      <ul class="points">
+        <li><span class="pi" data-icon="laptop"></span><div><b>Laptop ↔ phone</b><span>Screenshots to your phone, photos to your laptop, in one drop.</span></div></li>
+        <li><span class="pi" data-icon="users"></span><div><b>To friends</b><span>Everyone on Beam shows up as a friend. Send to their laptop or phone.</span></div></li>
+        <li><span class="pi" data-icon="lock"></span><div><b>Nothing to sign up for</b><span>No email, no password. Things are deleted from the server after 24 hours.</span></div></li>
+      </ul>
+      <div class="foot"><span class="fine">Takes about 2 minutes</span><button class="btn primary" data-next>Let's go</button></div>
+    </section>
+
+    <!-- 2. Invite -->
+    <section class="step" data-step="invite" hidden>
+      <div class="step-ico" data-icon="link"></div>
+      <h1>Paste your invite</h1>
+      <p class="lead">The link your friend sent you. It looks like <code>beam….workers.dev/join?c=K7QM3XPA</code></p>
+      <input class="field" id="inviteInput" placeholder="Paste the link here" spellcheck="false" autocomplete="off">
+      <div class="check" id="inviteCheck"></div>
+      <details class="aside">
+        <summary>Already use Beam on another device?</summary>
+        <p>On that laptop, open Beam → <b>Settings</b> → <b>Pair a phone</b> → <b>Show code</b>, and type the 6 digits above. This laptop joins your account.</p>
+      </details>
+      <div class="foot"><button class="btn ghost" data-back>Back</button><button class="btn primary" id="inviteNext" disabled>Continue</button></div>
+    </section>
+
+    <!-- 3. Name -->
+    <section class="step" data-step="name" hidden>
+      <div class="step-ico" data-icon="user"></div>
+      <h1>What's your name?</h1>
+      <p class="lead">Friends see it when you send them something, like "From <span id="nameEcho">Diego</span>".</p>
+      <input class="field big" id="nameInput" maxlength="40" placeholder="Your name" spellcheck="false" autocomplete="off">
+      <div class="check" id="nameCheck"></div>
+      <div class="foot"><button class="btn ghost" data-back>Back</button><button class="btn primary" id="nameNext" disabled>Continue</button></div>
+    </section>
+
+    <!-- 4. How it works -->
+    <section class="step" data-step="tour" hidden>
+      <h1>How it works</h1>
+      <p class="lead">Beam sits by the clock, out of the way, until you need it.</p>
+      <ol class="tour">
+        <li><span class="num">1</span><div><b>Press <span id="hotkey"></span></b><span>or click the Beam icon by the clock. If it's hidden, click <b>^</b> there and drag Beam onto the taskbar.</span></div></li>
+        <li><span class="num">2</span><div><b>Drop files on it, or press Ctrl+V</b><span>Pick who gets it from the buttons under the drop zone: your phone, or a friend's laptop or phone.</span></div></li>
+        <li><span class="num">3</span><div><b>Or right-click any file → Send to</b><span>On Windows 11 that's under <i>Show more options</i>.</span></div></li>
+        <li><span class="num">4</span><div><b>Things sent to you pop up</b><span>with a notification. Drag them out of Beam, or click to open or copy. Text is copied for you.</span></div></li>
+      </ol>
+      <label class="toggle-row"><span>Start Beam with Windows<small>So things sent to you arrive even if you didn't open it.</small></span><input type="checkbox" class="toggle" id="startup" checked></label>
+      <div class="foot"><span></span><button class="btn primary" data-next>Got it</button></div>
+    </section>
+
+    <!-- 5. Phone -->
+    <section class="step" data-step="phone" hidden>
+      <h1>Connect your phone</h1>
+      <div class="phone">
+        <div class="qr-wrap"><div class="qr" id="qr"></div><div class="fine" id="qrHost"></div></div>
+        <ol class="mini">
+          <li><b>Scan this</b> with your phone's camera and open the link.</li>
+          <li><b>iPhone:</b> tap <b>Share</b> → <b>Add to Home Screen</b>, then open Beam from your Home Screen.<br><b>Android:</b> tap <b>⋮</b> → <b>Install app</b> (or Add to Home screen).</li>
+          <li>Type this code: <span class="digits" id="code">--- ---</span></li>
+          <li>In Beam on the phone, go to <b>Settings</b> → <b>Turn on</b> notifications.</li>
+        </ol>
+      </div>
+      <div class="status" id="phoneStatus"><span class="spin"></span>Waiting for your phone…</div>
+      <div class="foot"><button class="btn ghost" id="skipPhone">Skip for now</button><button class="btn primary" id="phoneNext" hidden>Continue</button></div>
+    </section>
+
+    <!-- 6. Done -->
+    <section class="step" data-step="done" hidden>
+      <div class="hero small">
+        <div class="aurora"><i></i><i></i><i></i></div>
+        <div class="orb"><span data-icon="check"></span></div>
+      </div>
+      <h1 id="doneTitle">You're all set</h1>
+      <p class="lead" id="doneLead"></p>
+      <ul class="points">
+        <li><span class="pi" data-icon="users"></span><div><b>Invite more friends</b><span>Beam → Settings → Invite a friend makes a link like the one you got.</span></div></li>
+        <li><span class="pi" data-icon="phone"></span><div><b>Phone later?</b><span>Beam → Settings → Pair a phone shows this QR code again.</span></div></li>
+      </ul>
+      <div class="foot"><span></span><button class="btn primary" id="finish">Open Beam</button></div>
+    </section>
+  </div>
+  <script src="setup.js"></script>
+</body>
+</html>

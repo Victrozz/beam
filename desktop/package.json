@@ -1,0 +1,58 @@
+{
+  "name": "beam",
+  "productName": "Beam",
+  "version": "3.0.0",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.0.12"
+  },
+  "dependencies": {
+    "qrcode-generator": "^1.4.4"
+  },
+  "description": "Send files, photos, text and links to your phone and your friends",
+  "author": "Victrozz",
+  "homepage": "https://github.com/Victrozz/beam",
+  "beamServer": "https://beam.beam-server.workers.dev",
+  "build": {
+    "appId": "app.beam.desktop",
+    "productName": "Beam",
+    "executableName": "Beam",
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json",
+      "ui/**",
+      "assets/**"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "electronLanguages": [
+      "en-US",
+      "en-GB",
+      "es",
+      "es-419"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/app.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "artifactName": "Beam-Setup.exe",
+      "createDesktopShortcut": false,
+      "createStartMenuShortcut": false,
+      "runAfterFinish": true,
+      "include": "build/uninstall.nsh",
+      "installerIcon": "assets/app.ico",
+      "uninstallDisplayName": "Beam"
+    }
+  }
+}

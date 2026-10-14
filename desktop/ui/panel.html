@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' file: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<title>Beam</title>
+<link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <div id="card" class="card">
+    <header class="head">
+      <div class="brand"><span class="logo"></span><span>beam</span></div>
+      <div class="conn" id="conn"><i></i><span>Connecting…</span></div>
+      <div class="head-actions">
+        <button class="icon-btn" id="settingsBtn" title="Settings" data-icon="gear"></button>
+        <button class="icon-btn" id="closeBtn" title="Close (Esc)" data-icon="x"></button>
+      </div>
+    </header>
+
+    <section class="drop" id="drop" data-state="idle">
+      <div class="aurora"><i></i><i></i><i></i></div>
+      <div class="drop-inner">
+        <div class="orb">
+          <svg class="ring" viewBox="0 0 64 64"><circle cx="32" cy="32" r="29"/></svg>
+          <span class="glyph g-idle" data-icon="arrowUp"></span>
+          <span class="glyph g-done" data-icon="check"></span>
+          <span class="glyph g-error" data-icon="alert"></span>
+        </div>
+        <div class="drop-title" id="dropTitle">Drop to send</div>
+        <div class="drop-sub" id="dropSub">to your phone · <kbd>Ctrl</kbd><kbd>V</kbd> to paste · click to browse</div>
+      </div>
+    </section>
+
+    <section class="targets" id="targets" title="Who gets what you drop"></section>
+
+    <section class="recent">
+      <div class="recent-head">
+        <span>Recent</span>
+        <div class="seg" id="filter">
+          <button class="on" data-filter="all">All</button>
+          <button data-filter="in">Received</button>
+          <button data-filter="out">Sent</button>
+        </div>
+      </div>
+      <div class="list" id="list"></div>
+    </section>
+
+    <section class="sheet" id="sheet" aria-hidden="true">
+      <div class="sheet-head">
+        <button class="icon-btn" id="backBtn" data-icon="back" title="Back"></button>
+        <span>Settings</span>
+      </div>
+      <div class="sheet-body">
+        <div class="sec">
+          <div class="sec-title">You &amp; friends</div>
+          <div class="srow">
+            <div class="srow-text"><div class="t">Your name</div><div class="s">What friends see when you send them something</div></div>
+            <input class="name-input" id="nameInput" maxlength="40" spellcheck="false">
+          </div>
+          <div id="friendRows"></div>
+          <div class="srow">
+            <div class="srow-text"><div class="t">Invite a friend</div><div class="s">They get a link that sets everything up</div></div>
+            <button class="pbtn" id="inviteBtn">Get link</button>
+          </div>
+          <div class="invite-box" id="inviteBox" hidden>
+            <div class="invite-url" id="inviteUrl"></div>
+            <div class="s">Copied. Send it to them; it works once, for 14 days.</div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Your phone</div>
+          <div class="srow">
+            <div class="srow-text"><div class="t">Pair a phone</div><div class="s">Or another laptop of yours</div></div>
+            <button class="pbtn" id="pairBtn">Show code</button>
+          </div>
+          <div class="code-box" id="codeBox" hidden>
+            <div class="qr" id="codeQr"></div>
+            <div class="code-side">
+              <div class="s">Scan with the phone's camera, then type</div>
+              <div class="digits" id="codeDigits">--- ---</div>
+              <div class="s" id="codeTimer">Valid for 10:00</div>
+            </div>
+          </div>
+          <div class="srow">
+            <div class="srow-text"><div class="t">Phone notifications</div><div class="s" id="subsText">Checking…</div></div>
+            <span class="dot-status" id="subsDot"></span>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Shortcut</div>
+          <div class="srow">
+            <div class="srow-text"><div class="t">Open Beam</div><div class="s" id="hotkeyHint">Click to change</div></div>
+            <button class="keys" id="hotkeyBtn"></button>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Behaviour</div>
+          <label class="srow toggle-row">
+            <div class="srow-text"><div class="t">Start with Windows</div></div>
+            <input type="checkbox" class="toggle" data-key="startup">
+          </label>
+          <label class="srow toggle-row">
+            <div class="srow-text"><div class="t">Copy received text automatically</div><div class="s">Paste it anywhere straight away</div></div>
+            <input type="checkbox" class="toggle" data-key="copyText">
+          </label>
+          <label class="srow toggle-row">
+            <div class="srow-text"><div class="t">Notify me when something arrives</div></div>
+            <input type="checkbox" class="toggle" data-key="notify">
+          </label>
+        </div>
+
+        <div class="sec">
+          <div class="sec-title">Storage</div>
+          <div class="srow">
+            <div class="srow-text"><div class="t">Received files</div><div class="s">Kept in Beam for 30 days</div></div>
+            <button class="pbtn" id="openInboxBtn">Open folder</button>
+          </div>
+          <div class="srow">
+            <div class="srow-text"><div class="t">Clear history</div><div class="s">Also deletes received files</div></div>
+            <button class="pbtn danger" id="clearBtn">Clear</button>
+          </div>
+        </div>
+
+        <div class="sheet-foot">
+          <span id="serverText"></span>
+          <button class="pbtn ghost" id="quitBtn">Quit Beam</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="toast" id="toast"></div>
+  </div>
+  <script src="panel.js"></script>
+</body>
+</html>
