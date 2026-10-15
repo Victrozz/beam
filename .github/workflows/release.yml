@@ -35,7 +35,7 @@ jobs:
         shell: bash
         working-directory: desktop
         run: |
-          npx --yes @electron/asar list dist/win-unpacked/resources/app.asar > files.txt
+          npx --yes @electron/asar list dist/win-unpacked/resources/app.asar | tr '\\' '/' > files.txt
           for m in qrcode-generator electron-updater; do grep -q "node_modules/$m/package.json" files.txt || { echo "missing $m"; exit 1; }; done
           grep -q '"provider": "github"' dist/win-unpacked/resources/app-update.yml || grep -q 'provider: github' dist/win-unpacked/resources/app-update.yml
           test -f dist/latest.yml && cat dist/latest.yml
