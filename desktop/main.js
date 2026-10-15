@@ -40,9 +40,9 @@ function loadConfig() {
   if (config.server) config.server = config.server.replace(/\/+$/, '');
 }
 function saveConfig() {
-  const { server, token, hotkey, copyText, notify, target, me } = config;
+  const { server, token, hotkey, copyText, notify, target, me, exe } = config;
   fs.mkdirSync(ROOT, { recursive: true });
-  fs.writeFileSync(CONFIG_PATH, JSON.stringify({ server, token, hotkey, copyText, notify, target, me }, null, 2));
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify({ server, token, hotkey, copyText, notify, target, me, exe }, null, 2));
 }
 const isSetUp = () => !!(config.server && config.token);
 
@@ -562,6 +562,8 @@ function install({ startup = true } = {}) {
   shell.writeShortcutLink(path.join(app.getPath('appData'), 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Beam.lnk'),
     { target: process.execPath, args: launchArgs(), icon, iconIndex: 0, appUserModelId: AUMID, description: 'Send files to your phone and friends' });
   fs.rm(path.join(SEND_TO(), 'iPhone (Beam).lnk'), { force: true }, () => {}); // name used before friends existed
+  config.exe = process.execPath;
+  saveConfig();
   syncSendTo(true);
   app.setLoginItemSettings({ ...loginOpts(), openAtLogin: startup });
   // Copies from before the setup file existed lived in %LOCALAPPDATA%\Beam\app.
@@ -777,7 +779,8 @@ app.whenReady().then(() => {
   fs.mkdirSync(INBOX, { recursive: true });
   loadConfig();
   loadHistory();
-  if (process.argv.includes('--install') && isSetUp()) install();
+  // First run of a new install, or an update that moved the program (e.g. from the old install.ps1 location).
+  if (isSetUp() && (process.argv.includes('--install') || (app.isPackaged && config.exe !== process.execPath))) install();
   createTray();
   if (!SANDBOX) registerHotkey(config.hotkey);
   if (!hotkeyOk && !SANDBOX && Notification.isSupported()) {
