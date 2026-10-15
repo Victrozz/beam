@@ -55,7 +55,7 @@ Every account has its own tokens (one per device, stored hashed). Items are addr
 ## Releasing
 
 - Server or phone app: `cd server`, then `npx wrangler deploy`.
-- Windows app: bump `version` in `desktop/package.json`, then push a tag like `v3.0.1`. GitHub Actions builds `Beam-Setup.exe` and attaches it to the release; invite links always download the latest one. Running the new setup over an old install keeps your sign-in and history.
+- Windows app: bump `version` in `desktop/package.json`, then push a tag like `v3.1.1`. GitHub Actions builds `Beam-Setup.exe` and attaches it to the release with `latest.yml`. Installed copies (3.1.0 and later) check every 6 hours, download it in the background and install it silently the next time Beam is idle (panel closed, nothing sending), then start again. Settings → About shows the status and has **Check now** / **Restart now**. Invite links always download the latest setup, and running it over an old install keeps your sign-in and history.
 - Tests: `cd server && npm test` (push encryption vs the RFC 8291 vector), and with `npx wrangler dev` running, `node test/friends.test.mjs` (accounts, invites, pairing, sending between friends).
 
 ## When things go wrong

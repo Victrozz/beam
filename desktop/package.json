@@ -1,7 +1,7 @@
 {
   "name": "beam",
   "productName": "Beam",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "private": true,
   "main": "main.js",
   "scripts": {
@@ -13,6 +13,7 @@
     "electron-builder": "26.0.12"
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "qrcode-generator": "^1.4.4"
   },
   "description": "Send files, photos, text and links to your phone and your friends",
@@ -53,6 +54,13 @@
       "include": "build/uninstall.nsh",
       "installerIcon": "assets/app.ico",
       "uninstallDisplayName": "Beam"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Victrozz",
+        "repo": "beam"
+      }
+    ]
   }
 }

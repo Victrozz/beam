@@ -91,6 +91,7 @@ function snapshot() {
     settings: {
       hotkey: config.hotkey, hotkeyOk: hotkeyOk, copyText: config.copyText, notify: config.notify,
       startup: app.getLoginItemSettings(loginOpts()).openAtLogin, server: config.server, inbox: INBOX,
+      version: app.getVersion(), update,
     },
   };
 }
@@ -665,6 +666,45 @@ async function pairCode() {
 }
 
 let quitting = false;
+// ---------- updates ----------
+// Each GitHub release carries latest.yml next to Beam-Setup.exe. electron-updater reads it, downloads the new
+// setup in the background, and Beam restarts into it once it's idle: it's a tray app, so it rarely quits by itself.
+const UPDATE_EVERY = 6 * 3600 * 1000;
+const update = { state: 'off', version: null, error: null }; // off | idle | checking | downloading | ready | error
+let updater = null;
+const UPDATE_DRY_RUN = !!process.env.BEAM_UPDATE_DRY_RUN; // tests: check and download, never install
+
+function initUpdates() {
+  if (!app.isPackaged || (SANDBOX && !UPDATE_DRY_RUN)) return; // running from source: nothing to update
+  try { updater = require('electron-updater').autoUpdater; } catch { return; }
+  updater.autoDownload = true;
+  updater.autoInstallOnAppQuit = true;
+  updater.logger = null;
+  const set = (state, extra = {}) => { Object.assign(update, { state, error: null }, extra); pushState(); };
+  updater.on('checking-for-update', () => set('checking'));
+  updater.on('update-not-available', () => set('idle'));
+  updater.on('update-available', (info) => set('downloading', { version: info.version }));
+  updater.on('update-downloaded', (info) => { set('ready', { version: info.version }); installWhenIdle(); });
+  updater.on('error', (e) => set('error', { error: String(e?.message || e).split('\n')[0].slice(0, 160) }));
+  update.state = 'idle';
+  setTimeout(checkUpdates, UPDATE_DRY_RUN ? 2000 : 30 * 1000); // let startup settle first
+  setInterval(checkUpdates, UPDATE_EVERY);
+}
+
+function checkUpdates() {
+  if (!updater || update.state === 'downloading' || update.state === 'ready') return;
+  updater.checkForUpdates().catch(() => {});
+}
+
+function installWhenIdle() {
+  if (UPDATE_DRY_RUN) return;
+  if (mode !== 'hidden' || sending || queue.length || fetching) return setTimeout(installWhenIdle, 60 * 1000);
+  quitting = true;
+  globalShortcut.unregisterAll();
+  if (tray) tray.destroy();
+  updater.quitAndInstall(true, true); // silent install, then start the new version
+}
+
 function quit() {
   quitting = true;
   globalShortcut.unregisterAll();
@@ -757,6 +797,8 @@ ipcMain.handle('clear-history', () => {
   persist();
 });
 ipcMain.handle('quit', () => quit());
+ipcMain.handle('check-updates', () => { checkUpdates(); return update; });
+ipcMain.handle('install-update', () => { if (update.state === 'ready') { hidePanel(); installWhenIdle(); } });
 
 const dragIcon = () => nativeImage.createFromPath(path.join(ASSETS, 'drag.png'));
 ipcMain.on('drag-out', (e, id) => {
@@ -787,6 +829,7 @@ app.whenReady().then(() => {
     new Notification({ title: 'Beam hotkey unavailable', body: `${config.hotkey} is used by another app. Pick another one in Beam → Settings.` }).show();
   }
   connect();
+  initUpdates();
   powerMonitor.on('resume', dropSocket);
   powerMonitor.on('unlock-screen', () => { if (!ws) dropSocket(); });
   if (!isSetUp()) openSetup();

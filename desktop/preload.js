@@ -32,4 +32,6 @@ contextBridge.exposeInMainWorld('beam', {
   openInbox: () => ipcRenderer.invoke('open-inbox'),
   clearHistory: () => ipcRenderer.invoke('clear-history'),
   quit: () => ipcRenderer.invoke('quit'),
+  checkUpdates: () => ipcRenderer.invoke('check-updates'),
+  installUpdate: () => ipcRenderer.invoke('install-update'),
 });

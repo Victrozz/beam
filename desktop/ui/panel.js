@@ -363,6 +363,7 @@ function renderSettings() {
   $('#subsText').textContent = subs == null ? 'Checking…' : subs > 0 ? `On · ${subs} device${subs > 1 ? 's' : ''}` : 'Off. Open Beam on your phone and turn them on';
   $('#subsDot').className = 'dot-status ' + (subs == null ? '' : subs > 0 ? 'on' : 'off');
   try { $('#serverText').textContent = new URL(st.server).host; } catch { $('#serverText').textContent = 'Not set up'; }
+  renderUpdate(st);
   const nameInput = $('#nameInput');
   if (document.activeElement !== nameInput) nameInput.value = S.me?.name || '';
   $('#friendRows').innerHTML = S.status.friends.map((f) => `<div class="srow">
@@ -371,6 +372,23 @@ function renderSettings() {
     <span title="${f.phone ? 'Phone notifications on' : 'Phone notifications off'}" data-icon="phone"><i class="${f.phone ? 'on' : ''}"></i></span></div></div>`).join('');
   paintIcons($('#friendRows'));
 }
+
+function renderUpdate(st) {
+  const u = st.update;
+  $('#versionText').textContent = `Beam ${st.version}`;
+  $('#updateText').textContent = {
+    off: 'Running from source, no automatic updates',
+    idle: 'Up to date. Updates install by themselves',
+    checking: 'Checking for updates…',
+    downloading: `Downloading ${u.version}…`,
+    ready: `${u.version} is ready. It installs next time Beam is idle`,
+    error: `Couldn't check for updates${u.error ? ` (${u.error})` : ''}`,
+  }[u.state] || '';
+  const btn = $('#updateBtn');
+  btn.hidden = !['idle', 'error', 'ready'].includes(u.state);
+  btn.textContent = u.state === 'ready' ? 'Restart now' : 'Check now';
+}
+$('#updateBtn').onclick = () => (S.settings.update.state === 'ready' ? beam.installUpdate() : beam.checkUpdates());
 
 const cleanError = (e) => String(e.message || e).replace(/^Error invoking remote method '[\w:-]+': (Error: )?/, '');
 
