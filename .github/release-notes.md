@@ -2,4 +2,4 @@
 
 If Windows says *"Windows protected your PC"*, click **More info → Run anyway**. Beam is a small free app without a paid code-signing certificate.
 
-New in this version: friends. Everyone on Beam shows up as a friend, and you can send to their laptop or their phone.
+New in this version: Beam stays connected when your internet provider blocks Cloudflare (Movistar and others in Spain do it during football matches). The laptop finds another way to the server within about 20 seconds and goes back to normal when the block ends. Installed copies update themselves.

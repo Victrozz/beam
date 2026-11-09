@@ -11,6 +11,7 @@ const { execFile } = require('child_process');
 const crypto = require('crypto');
 const { fileURLToPath } = require('url');
 const qrcode = require('qrcode-generator');
+const { checkRoute } = require('./route');
 
 const ROOT = process.env.BEAM_HOME || path.join(process.env.LOCALAPPDATA, 'Beam');
 const SANDBOX = !!process.env.BEAM_HOME; // a test copy: leaves the real shortcuts, startup entry and hotkey alone
@@ -202,12 +203,13 @@ function registerHotkey(spec) {
 }
 
 // ---------- server API ----------
-async function api(p, opts = {}) {
+async function api(p, opts = {}, retried = false) {
   if (!isSetUp()) throw new Error('Beam isn\'t set up yet');
   let res;
   try {
     res = await fetch(config.server + p, { ...opts, headers: { ...(opts.headers || {}), Authorization: `Bearer ${config.token}` } });
   } catch {
+    if (!retried && await checkRoute(config.server)) return api(p, opts, true); // found a way past a block
     throw new Error('No connection');
   }
   if (res.status === 401) throw new Error('This laptop was signed out of Beam');
@@ -388,7 +390,8 @@ function connect() {
   let sock;
   try { sock = new WebSocket(url); } catch { return scheduleReconnect(); }
   ws = sock;
-  sock.onopen = () => { if (ws !== sock) return; backoff = 2; lastRx = Date.now(); setConn('online'); fetchPending(); refreshStatus(); };
+  let opened = false;
+  sock.onopen = () => { if (ws !== sock) return; opened = true; backoff = 2; lastRx = Date.now(); setConn('online'); fetchPending(); refreshStatus(); };
   sock.onmessage = (e) => {
     if (ws !== sock) return;
     lastRx = Date.now();
@@ -396,7 +399,14 @@ function connect() {
     if (msg.includes('"item"')) fetchPending();
     else if (msg.includes('"presence"')) { clearTimeout(presenceTimer); presenceTimer = setTimeout(refreshStatus, 1000); }
   };
-  sock.onclose = sock.onerror = () => { if (ws !== sock) return; ws = null; if (status.conn === 'online') setConn('connecting'); scheduleReconnect(); };
+  sock.onclose = sock.onerror = () => {
+    if (ws !== sock) return;
+    ws = null;
+    if (status.conn === 'online') setConn('connecting');
+    if (opened) return scheduleReconnect();
+    // Never got through: maybe the ISP is blocking the server's address. Retry soon if another way was found.
+    checkRoute(config.server).then((changed) => { if (!ws) scheduleReconnect(changed ? 0.5 : undefined); });
+  };
 }
 function dropSocket() {
   const sock = ws;
@@ -567,9 +577,10 @@ function install({ startup = true } = {}) {
   saveConfig();
   syncSendTo(true);
   app.setLoginItemSettings({ ...loginOpts(), openAtLogin: startup });
-  // Copies from before the setup file existed lived in %LOCALAPPDATA%\Beam\app.
+  // Copies from before the setup file existed lived in %LOCALAPPDATA%\Beam\app. original-fs: Electron's fs opens the
+  // app.asar inside as a folder and then can't delete it (EBUSY).
   const oldApp = path.join(ROOT, 'app');
-  if (app.isPackaged && !process.execPath.startsWith(oldApp + path.sep)) fs.rm(oldApp, { recursive: true, force: true }, () => {});
+  if (app.isPackaged && !process.execPath.startsWith(oldApp + path.sep)) require('original-fs').rm(oldApp, { recursive: true, force: true }, () => {});
 }
 
 // Right-click → Send to → "My phone (Beam)", "Diego's laptop (Beam)", ...
@@ -641,11 +652,12 @@ function parseInvite(input) {
   return null;
 }
 
-async function publicCall(server, p, body) {
+async function publicCall(server, p, body, retried = false) {
   let res;
   try {
     res = await fetch(server + p, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : {});
   } catch {
+    if (!retried && await checkRoute(server)) return publicCall(server, p, body, true);
     throw new Error('Can\'t reach Beam. Check your internet connection');
   }
   const data = await res.json().catch(() => ({}));

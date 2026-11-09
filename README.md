@@ -65,6 +65,7 @@ Every account has its own tokens (one per device, stored hashed). Items are addr
 | **Connected (slow)** in the panel | The network blocks live connections. Beam checks every 20 s instead. |
 | **not notified** on a sent item | That phone has notifications off. Open Beam on the phone → Settings → Turn on. |
 | **waiting** on a sent item, or **Laptop offline** on the phone | Items wait on the server for up to 24 h and arrive when the laptop is back. |
+| Laptop **Offline** while the phone works (e.g. on Movistar during football matches) | The ISP is blocking Cloudflare's addresses. Beam (3.1.1+) reaches the server through another Cloudflare address within about 20 s (`desktop/route.js`) and goes back once the block ends. |
 | **Failed · …** on an item | Hover it and click retry. Sends interrupted by shutting down are marked failed too. |
 | Hotkey doesn't work | Another app took it. Change it in Beam → Settings → Shortcut. |
 | Invite says expired | Invites work once, for 14 days. Ask for a new one. |
